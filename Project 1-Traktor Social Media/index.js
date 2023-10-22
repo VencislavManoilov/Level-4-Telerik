@@ -36,79 +36,72 @@ app.get("/register", function(req, res) {
         res.status(200);
         res.sendFile(path.join(__dirname, "public", "register.html"));
     } else {
-        let ok = true;
+        let errors = []; // Store validation errors
+
         // Check if everything is here
         if(!req.query.id) {
-            res.status(400).json({error: "Username is required!"});
-            ok = false;
+            errors.push("Username is required!");
         } else {
             const found = profiles.some(el => el.id === req.query.id);
-            if (found){
-                res.status(400).json({error: "Username already exists!"});
-                ok = false;
+            if(found) {
+                errors.push("Username already exists!");
             }
         }
 
         if(!req.query.name) {
-            res.status(400).json({error: "Name is required!"});
-            ok = false;
+            errors.push("Name is required!");
         }
 
         if(!req.query.age) {
-            res.status(400).json({error: "Age is required!"});
-            ok = false;
-        } else {
-            if(isNaN(req.query.age)) {
-                res.status(400).json({error: "Age needs to be a number!"})
-                ok = false;
-            }
+            errors.push("Age is required!");
+        } else if(isNaN(req.query.age)) {
+            errors.push("Age needs to be a number!");
         }
-        
+
         if(!req.query.gender) {
-            res.status(400).json({error: "You must select a gender"});
-            ok = false;
+            errors.push("You must select a gender");
         }
 
         if(!req.query.email) {
-            res.status(400).json({error: "Email is required!"});
-            ok = false;
+            errors.push("Email is required!");
         } else {
             const isValid = validator.validate(req.query.email);
             if(!isValid) {
-                res.status(400).json({error: "You must type valid email!"});
-                ok = false;
+                errors.email.push("You must type a valid email!");
             }
         }
 
         if(!req.query.password) {
-            res.status(400).json({error: "Password is required!"});
-            ok = false;
+            errors.password.push("Password is required!");
         }
 
         if(!req.query.phone) {
-            res.status(400).json({error: "Phone is required!"});
-            ok = false;
+            errors.phone.push("Phone is required!");
         }
 
-        // Adding it to the profiles
-        if(ok) {
+        if(errors.length > 0) {
+            console.log(errors);
+            res.status(400).json(JSON.stringify(errors));
+        } else {
             const data = fs.readFileSync(path.join(__dirname, "Database", "profiles.json"));
             const jsonData = JSON.parse(data);
             jsonData.profiles.push({
                 id : req.query.id,
                 name : req.query.name,
-                age: req.query.age,
+                age : req.query.age,
                 gender : req.query.gender,
                 email : req.query.email,
                 password : req.query.password,
                 phone : req.query.phone,
-                followers : 0
+                followers : 0,
+                posts : []
             })
+            
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), JSON.stringify(jsonData));
             res.status(200).json({success: "Account is succesfully created!"});
         }
     }
-})
+});
 
 app.get("/login", function(req, res){
     if(!req.query.new) {
