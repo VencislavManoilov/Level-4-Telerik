@@ -6,21 +6,39 @@
     </head>
 
     <body onload="init()">
-        <p id="bachkaLi" style="font-size: 5vw; text-align: center;">Ne bachka</p>
+        <nav style="font-size: 25px;">
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        </nav>
+        <br/>
+        <div id="Profiles"></div>
     </body>
 
     <script>
         const xhr = new XMLHttpRequest();
+        let people = [];
         function init() {
-            xhr.open("GET", "/test");
+            xhr.open("GET", "/profiles");
             xhr.send();
             xhr.onload = () => {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                const data = xhr.response;
-                document.getElementById("bachkaLi").innerHTML = data;
-            } else {
-                console.log(`Error: ${xhr.status}`);
-            }
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    const data = JSON.parse(xhr.response).profiles;
+                    let proObject = document.getElementById("Profiles");
+                    document.getElementById("Profiles").innerHTML = "";
+                    for(i = 0; i < data.length; i++) {
+                        document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'>Name: " + data[i].name + 
+                        "<br /> Username: " + data[i].id + 
+                        "<br /> Age: " + data[i].age + 
+                        "<br /> Gender: " + data[i].gender + 
+                        "<br /> Email: " + data[i].email + 
+                        "<br /> Password: " + data[i].password + 
+                        "<br /> Phone: " + data[i].phone +
+                        "<br /> Followers: " + data[i].followers +
+                        "</div><br />";
+                    }
+                } else {
+                    console.log(`Error: ${xhr.status}`);
+                }
             };
         }
     </script>
