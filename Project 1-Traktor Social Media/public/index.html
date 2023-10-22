@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Traktora vizda vsichko</title>
+    </head>
+
+    <body onload="init()">
+        <p id="bachkaLi" style="font-size: 5vw; text-align: center;">Ne bachka</p>
+    </body>
+
+    <script>
+        const xhr = new XMLHttpRequest();
+        function init() {
+            xhr.open("GET", "/test");
+            xhr.send();
+            xhr.onload = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                const data = xhr.response;
+                document.getElementById("bachkaLi").innerHTML = data;
+            } else {
+                console.log(`Error: ${xhr.status}`);
+            }
+            };
+        }
+    </script>
+</html>
