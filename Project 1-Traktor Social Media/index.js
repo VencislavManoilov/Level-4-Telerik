@@ -8,7 +8,26 @@ const { type } = require("os");
 
 app.use(express.static('public'));
 
-let profiles = [];
+let profiles = [], key = "";
+
+fs.readFile('key.txt', 'utf8', function(err, data) {
+    if(err) {
+        console.log(err);
+        return;
+    }
+
+    key = data;
+});
+
+function checkProfiles() {
+    fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
+        if(err) {
+            console.log(err);
+        } else {
+            profiles = JSON.parse(data).profiles;
+        }
+    });
+}
 
 app.get("/", function(req, res) {
     res.status(200);
@@ -17,18 +36,44 @@ app.get("/", function(req, res) {
 
 app.listen(PORT, function() {
     console.log("Listening: " + PORT);
-    fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
-        if(err) {
-            console.log(err);
-        } else {
-            profiles = JSON.parse(data).profiles;
-        }
-    });
+    checkProfiles();
 })
 
 app.get("/profiles", function(req, res) {
     res.status(200);
     res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+})
+
+app.get("/admin", function(req, res) {
+    if(req.query.key == key) {
+        res.status(200);
+        res.sendFile(path.join(__dirname, "public", "admin.html"));
+    } else {
+        res.status(200);
+        res.sendFile(path.join(__dirname, "public", "idiot.html"));
+    }
+})
+
+app.delete("/admin", function(req, res) {
+    if(req.query.key == key) {
+        checkProfiles();
+        const found = profiles.some(el => el.id === req.query.id);
+        if(found) {
+            const index = profiles.findIndex(el => el.id === req.query.id);
+            profiles.splice(index, 1);
+            fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), '{"profiles":' + JSON.stringify(profiles) + '}');
+            checkProfiles();
+            console.log(profiles);
+            res.status(200);
+            res.send("deleted");
+        } else {
+            res.status(400);
+            res.send("This user isn't found!");
+        }
+    } else {
+        res.status(400);
+        res.send("What are you doing you piece of shit?!");
+    }
 })
 
 app.get("/register", function(req, res) {
