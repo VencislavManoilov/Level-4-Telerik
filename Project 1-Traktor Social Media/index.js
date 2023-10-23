@@ -67,16 +67,16 @@ app.get("/register", function(req, res) {
         } else {
             const isValid = validator.validate(req.query.email);
             if(!isValid) {
-                errors.email.push("You must type a valid email!");
+                errors.push("You must type a valid email!");
             }
         }
 
         if(!req.query.password) {
-            errors.password.push("Password is required!");
+            errors.push("Password is required!");
         }
 
         if(!req.query.phone) {
-            errors.phone.push("Phone is required!");
+            errors.push("Phone is required!");
         }
 
         if(errors.length > 0) {
@@ -98,7 +98,7 @@ app.get("/register", function(req, res) {
             })
             
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), JSON.stringify(jsonData));
-            res.status(200).json({success: "Account is succesfully created!"});
+            res.status(200).json(JSON.stringify(["Success!"]));
         }
     }
 });
