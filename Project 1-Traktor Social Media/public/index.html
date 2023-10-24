@@ -11,35 +11,65 @@
             <a href="/login">Login</a>
         </nav>
         <br/>
+
+        <input type="text" name="search" id="search" placeholder="Search" autocomplete="off" oninput="search()">
+
+        <br />
+        <br />
         <div id="Profiles"></div>
     </body>
 
     <script>
         const xhr = new XMLHttpRequest();
-        let people = [];
+        let profiles = [];
         function init() {
             xhr.open("GET", "/profiles");
             xhr.send();
             xhr.onload = () => {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     const data = JSON.parse(xhr.response).profiles;
-                    let proObject = document.getElementById("Profiles");
-                    document.getElementById("Profiles").innerHTML = "";
-                    for(i = 0; i < data.length; i++) {
-                        document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'>Name: " + data[i].name + 
-                        "<br /> Username: " + data[i].id + 
-                        "<br /> Age: " + data[i].age + 
-                        "<br /> Gender: " + data[i].gender + 
-                        "<br /> Email: " + data[i].email + 
-                        "<br /> Password: " + data[i].password + 
-                        "<br /> Phone: " + data[i].phone +
-                        "<br /> Followers: " + data[i].followers +
-                        "</div><br />";
-                    }
+                    profiles = data;
+                    showProfiles(data);
                 } else {
                     console.log(`Error: ${xhr.status}`);
                 }
             };
+        }
+
+        function showProfiles(data) {
+            let proObject = document.getElementById("Profiles");
+            document.getElementById("Profiles").innerHTML = "";
+            for(i = 0; i < data.length; i++) {
+                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'>Name: " + data[i].name + 
+                "<br /> Username: " + data[i].id + 
+                "<br /> Age: " + data[i].age + 
+                "<br /> Gender: " + data[i].gender + 
+                "<br /> Email: " + data[i].email + 
+                "<br /> Password: " + data[i].password + 
+                "<br /> Phone: " + data[i].phone +
+                "<br /> Followers: " + data[i].followers +
+                "</div><br />";
+            }
+        }
+
+        function search() {
+            const value = document.getElementById("search").value;
+            const matchingIndexes = [];
+
+            for (let i = 0; i < profiles.length; i++) {
+                const obj = profiles[i];
+
+                if (obj.id.includes(value) || obj.name.includes(value)) {
+                    matchingIndexes.push(i);
+                }
+            }
+
+            let show = [];
+            for(let i = 0; i < matchingIndexes.length; i++) {
+                show.push(profiles[matchingIndexes[i]]);
+            }
+
+            showProfiles(show);
         }
     </script>
 </html>
