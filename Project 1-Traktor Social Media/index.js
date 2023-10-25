@@ -125,7 +125,6 @@ app.get("/register", function(req, res) {
         }
 
         if(errors.length > 0) {
-            console.log(errors);
             res.status(400).json(JSON.stringify(errors));
         } else {
             const data = fs.readFileSync(path.join(__dirname, "Database", "profiles.json"));
@@ -153,17 +152,39 @@ app.get("/login", function(req, res){
         res.status(200);
         res.sendFile(path.join(__dirname, "public", "login.html"));
     } else {
+        let errors = [];
+
         if(!req.query.id) {
-            res.status(400).json({error: "You must type your username!"});
+            errors.push("You must type your username!");
         } else {
             const found = profiles.some(el => el.id === req.query.id);
             if(!found) {
-                res.status(400).json({error: "Username doesn't exist!"});
+                errors.push("Username doesn't exist!");
+            } else {
+                if(!req.query.password) {
+                    errors.push("You must type your password");
+                } else {
+                    for(let i = 0; i < profiles.length; i++) {
+                        const obj = profiles[i];
+                        if(obj.id == req.query.id) {
+                            if(obj.password != req.query.password) {
+                                console.log("Hello")
+                                errors.push("Password is not correct!");
+                                i = profiles.length;
+                            } else {
+                                res.status(200).json(["Success!"]);
+                            }
+                            return;
+                        }
+                    }
+                }
+
             }
         }
 
-        if(!req.query.password) {
-            res.status(400).json({error: "Password is incorect!"});
+        if(errors.length > 0) {
+            console.log("Hello");
+            res.status(400).json(errors);
         }
     }
 })
