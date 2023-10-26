@@ -36,6 +36,8 @@
 
         <div id="messages"></div>
 
+        <script src="cookies.js"></script>
+
         <script>
             const xhr = new XMLHttpRequest();
 
@@ -51,8 +53,10 @@
                         const data = JSON.parse(xhr.response);
                         document.getElementById("messages").innerHTML = "";
                         if(data) {
-                            if(JSON.parse(data)[0] == "Success!") {
-                                document.getElementById("messages").innerHTML = "<p class='success'>Success!</p>";
+                            if(data[0] == "Success!") {
+                                const key = data[1];
+                                setCookie("sessionKey", key, 7);
+                                document.location.href = "/";
                             } else {
                                 for(let i = 0; i < data.length; i++) {
                                     document.getElementById("messages").innerHTML += "<p class='error'>" + data[i] + "</p>";

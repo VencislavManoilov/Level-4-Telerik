@@ -8,7 +8,7 @@ const { type } = require("os");
 
 app.use(express.static('public'));
 
-let profiles = [], key = "";
+let profiles = [], key = "", allSessions = [];
 
 fs.readFile('key.txt', 'utf8', function(err, data) {
     if(err) {
@@ -19,6 +19,8 @@ fs.readFile('key.txt', 'utf8', function(err, data) {
     key = data;
 });
 
+checkSessions();
+
 function checkProfiles() {
     fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
         if(err) {
@@ -27,6 +29,63 @@ function checkProfiles() {
             profiles = JSON.parse(data).profiles;
         }
     });
+}
+
+function profileIndex(id) {
+    for(let i = 0; i < profiles.length; i++) {
+        if(profiles[i].id == id) {
+            return i;
+        }
+    }
+}
+
+function checkSessions() {
+    fs.readFile(path.join(__dirname, "Database", "sessions.json"), function(err, data) {
+        if(err) {
+            console.log(err);
+            res.status(500);
+            res.send("Something went wrong!");
+        } else {
+            allSessions = JSON.parse(data).sessions;
+        }
+    })
+}
+
+function updateSession(newUser, ide) {
+    const newKey = getSessionKey();
+    if(newUser) {
+        allSessions.push({key : newKey, id : ide});
+        uploadSession(allSessions);
+    } else {
+        for(let i = 0; i < allSessions.length; i++) {
+            if(allSessions[i].id == id) {
+                allSessions[i] = newKey;
+                i = allSessions.length;
+            }
+        }
+
+        uploadSession(allSessions);
+    }
+
+    return newKey;
+}
+
+function uploadSession(sessions) {
+    fs.writeFileSync(path.join(__dirname, "Database", "sessions.json"), '{"sessions":' + JSON.stringify(sessions) + '}');
+    checkSessions();
+}
+
+function getSessionKey() {
+    const char = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const length = 64;
+
+    let sessionKey = "";
+
+    for(let i = 0; i < length; i++) {
+        sessionKey += char[Math.floor(Math.random() * char.length)];
+    }
+
+    return sessionKey;
 }
 
 app.get("/", function(req, res) {
@@ -42,6 +101,24 @@ app.listen(PORT, function() {
 app.get("/profiles", function(req, res) {
     res.status(200);
     res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+})
+
+app.get("/session", function(req, res) {
+    if(!req.query.key) {
+        res.status(400);
+        res.send("What are you doing?");
+    } else {
+        for(let i = 0; i < allSessions.length; i++) {
+            if(allSessions[i].key == req.query.key) {
+                const newKey = updateSession(false, allSessions[i].id);
+                res.status(200).json(JSON.stringify({key : newKey, profile : profiles[profileIndex(allSessions[i].id)]}));
+                i = allSessions.length;
+            }
+        }
+
+        res.status(500);
+        res.send("Am I stupid or you");
+    }
 })
 
 app.get("/admin", function(req, res) {
@@ -178,7 +255,10 @@ app.get("/login", function(req, res){
         if(errors.length > 0) {
             res.status(400).json(errors);
         } else {
-            res.status(200).json(JSON.stringify(["Success!"]));
+            const newKey = updateSession(true, req.query.id);
+
+            res.status(200);
+            res.send(JSON.stringify(["Success!", newKey]));
         }
     }
 })
