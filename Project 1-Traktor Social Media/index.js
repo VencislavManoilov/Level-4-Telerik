@@ -63,7 +63,6 @@ app.delete("/admin", function(req, res) {
             profiles.splice(index, 1);
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), '{"profiles":' + JSON.stringify(profiles) + '}');
             checkProfiles();
-            console.log(profiles);
             res.status(200);
             res.send("deleted");
         } else {
@@ -165,26 +164,21 @@ app.get("/login", function(req, res){
                     errors.push("You must type your password");
                 } else {
                     for(let i = 0; i < profiles.length; i++) {
-                        const obj = profiles[i];
-                        if(obj.id == req.query.id) {
-                            if(obj.password != req.query.password) {
-                                console.log("Hello")
+                        if(profiles[i].id == req.query.id) {
+                            if(profiles[i].password != req.query.password) {
                                 errors.push("Password is not correct!");
                                 i = profiles.length;
-                            } else {
-                                res.status(200).json(["Success!"]);
                             }
-                            return;
                         }
                     }
                 }
-
             }
         }
 
         if(errors.length > 0) {
-            console.log("Hello");
             res.status(400).json(errors);
+        } else {
+            res.status(200).json(JSON.stringify(["Success!"]));
         }
     }
 })
