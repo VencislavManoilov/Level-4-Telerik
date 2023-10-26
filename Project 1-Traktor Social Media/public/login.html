@@ -51,7 +51,7 @@
                         const data = JSON.parse(xhr.response);
                         document.getElementById("messages").innerHTML = "";
                         if(data) {
-                            if(data[0] == "Success!") {
+                            if(JSON.parse(data)[0] == "Success!") {
                                 document.getElementById("messages").innerHTML = "<p class='success'>Success!</p>";
                             } else {
                                 for(let i = 0; i < data.length; i++) {
