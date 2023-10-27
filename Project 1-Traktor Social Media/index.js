@@ -40,11 +40,9 @@ function profileIndex(id) {
 }
 
 function checkSessions() {
-    fs.readFile(path.join(__dirname, "Database", "sessions.json"), function(err, data) {
+    fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), function(err, data) {
         if(err) {
             console.log(err);
-            res.status(500);
-            res.send("Something went wrong!");
         } else {
             allSessions = JSON.parse(data).sessions;
         }
@@ -58,8 +56,8 @@ function updateSession(newUser, ide) {
         uploadSession(allSessions);
     } else {
         for(let i = 0; i < allSessions.length; i++) {
-            if(allSessions[i].id == id) {
-                allSessions[i] = newKey;
+            if(allSessions[i].id == ide) {
+                allSessions[i].key = newKey;
                 i = allSessions.length;
             }
         }
@@ -105,21 +103,18 @@ app.get("/profiles", function(req, res) {
 
 app.get("/session", function(req, res) {
     if(!req.query.key) {
-        res.status(400);
-        res.send("What are you doing?");
+        res.status(400).json({ error: "Missing session key" });
     } else {
-        for(let i = 0; i < allSessions.length; i++) {
-            if(allSessions[i].key == req.query.key) {
-                const newKey = updateSession(false, allSessions[i].id);
-                res.status(200).json(JSON.stringify({key : newKey, profile : profiles[profileIndex(allSessions[i].id)]}));
-                i = allSessions.length;
-            }
+        const session = allSessions.find(session => session.key === req.query.key);
+        if(session) {
+            const newKey = updateSession(false, session.id);
+            const profileData = profiles[profileIndex(session.id)];
+            res.status(200).json({ key: newKey, profile: profileData });
+        } else {
+            res.status(400).json({ error: "Invalid session key" });
         }
-
-        res.status(500);
-        res.send("Am I stupid or you");
     }
-})
+});
 
 app.get("/admin", function(req, res) {
     if(req.query.key == key) {
@@ -201,7 +196,7 @@ app.get("/register", function(req, res) {
         }
 
         if(errors.length > 0) {
-            res.status(400).json(JSON.stringify(errors));
+            res.status(400).json(errors);
         } else {
             const data = fs.readFileSync(path.join(__dirname, "Database", "profiles.json"));
             const jsonData = JSON.parse(data);
