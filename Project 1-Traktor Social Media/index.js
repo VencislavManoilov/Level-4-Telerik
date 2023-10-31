@@ -10,7 +10,7 @@ app.use(express.static('public'));
 
 let profiles = [], key = "", allSessions = [];
 
-fs.readFile('key.txt', 'utf8', function(err, data) {
+fs.readFileSync('key.txt', 'utf8', function(err, data) {
     if(err) {
         console.log(err);
         return;
@@ -18,8 +18,6 @@ fs.readFile('key.txt', 'utf8', function(err, data) {
 
     key = data;
 });
-
-checkSessions();
 
 function checkProfiles() {
     fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
@@ -40,13 +38,7 @@ function profileIndex(id) {
 }
 
 function checkSessions() {
-    fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), function(err, data) {
-        if(err) {
-            console.log(err);
-        } else {
-            allSessions = JSON.parse(data).sessions;
-        }
-    })
+    allSessions = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), {encoding: 'utf8'})).sessions;
 }
 
 function updateSession(newUser, ide) {
@@ -94,6 +86,7 @@ app.get("/", function(req, res) {
 app.listen(PORT, function() {
     console.log("Listening: " + PORT);
     checkProfiles();
+    checkSessions();
 })
 
 app.get("/profiles", function(req, res) {
@@ -105,10 +98,10 @@ app.get("/session", function(req, res) {
     if(!req.query.key) {
         res.status(400).json({ error: "Missing session key" });
     } else {
-        const theSession = allSessions.find(theSession => theSession.key === req.query.key);
+        const theSession = allSessions.find(s => s.key == req.query.key);
         if(theSession) {
-            const newKey = updateSession(false, theSession.id);
             const profileData = profiles[profileIndex(theSession.id)];
+            const newKey = updateSession(false, theSession.id);
             res.status(200).json({ key: newKey, profile: profileData });
         } else {
             res.status(400).json({ error: "Invalid session key" });
