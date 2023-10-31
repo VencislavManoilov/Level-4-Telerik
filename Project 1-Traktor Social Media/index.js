@@ -105,10 +105,10 @@ app.get("/session", function(req, res) {
     if(!req.query.key) {
         res.status(400).json({ error: "Missing session key" });
     } else {
-        const session = allSessions.find(session => session.key === req.query.key);
-        if(session) {
-            const newKey = updateSession(false, session.id);
-            const profileData = profiles[profileIndex(session.id)];
+        const theSession = allSessions.find(theSession => theSession.key === req.query.key);
+        if(theSession) {
+            const newKey = updateSession(false, theSession.id);
+            const profileData = profiles[profileIndex(theSession.id)];
             res.status(200).json({ key: newKey, profile: profileData });
         } else {
             res.status(400).json({ error: "Invalid session key" });
