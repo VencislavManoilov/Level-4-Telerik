@@ -75,7 +75,7 @@
             let proObject = document.getElementById("Profiles");
             document.getElementById("Profiles").innerHTML = "";
             for(i = 0; i < data.length; i++) {
-                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'>Name: " + data[i].name + 
+                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'><img src='/profilePic/" + data[i].profilePic + "'>Name: " + data[i].name + 
                 "<br /> Username: " + data[i].id + 
                 "<br /> Age: " + data[i].age + 
                 "<br /> Gender: " + data[i].gender + 

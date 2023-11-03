@@ -84,6 +84,12 @@ app.get("/profiles", function(req, res) {
     res.sendFile(path.join(__dirname, "Database", "profiles.json"))
 })
 
+app.get('/profilePic/:id', (req, res) => {
+    const id = req.params.id;
+    const imagePath = path.join(__dirname, 'Database', 'ProfilePics', id + '.jpeg');
+    res.sendFile(imagePath);
+});
+
 app.get("/session", function(req, res) {
     if(!req.query.key) {
         res.status(400).json({ error: "Missing session key" });
@@ -206,6 +212,7 @@ app.get("/register", function(req, res) {
                 email : req.query.email,
                 password : req.query.password,
                 phone : req.query.phone,
+                profilePic : "default",
                 followers : 0,
                 posts : []
             })
