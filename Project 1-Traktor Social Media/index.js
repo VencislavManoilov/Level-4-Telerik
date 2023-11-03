@@ -41,21 +41,11 @@ function checkSessions() {
     allSessions = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), {encoding: 'utf8'})).sessions;
 }
 
-function updateSession(newUser, ide) {
+function updateSession(ide) {
     const newKey = getSessionKey();
-    if(newUser) {
-        allSessions.push({key : newKey, id : ide});
-        uploadSession(allSessions);
-    } else {
-        for(let i = 0; i < allSessions.length; i++) {
-            if(allSessions[i].id == ide) {
-                allSessions[i].key = newKey;
-                i = allSessions.length;
-            }
-        }
 
-        uploadSession(allSessions);
-    }
+    allSessions.push({key : newKey, id : ide});
+    uploadSession(allSessions);
 
     return newKey;
 }
@@ -101,13 +91,28 @@ app.get("/session", function(req, res) {
         const theSession = allSessions.find(s => s.key == req.query.key);
         if(theSession) {
             const profileData = profiles[profileIndex(theSession.id)];
-            const newKey = updateSession(false, theSession.id);
-            res.status(200).json({ key: newKey, profile: profileData });
+            res.status(200).json({ profile: profileData });
         } else {
             res.status(400).json({ error: "Invalid session key" });
         }
     }
 });
+
+app.delete("/session", function(req, res) {
+    if(!req.query.id) {
+        res.status(400).json({ error: "Id is missing!" });
+    } else {
+        const theSession = allSessions.find(s => s.id == req.query.id);
+        if(theSession) {
+            const index = allSessions.indexOf(theSession);
+            allSessions.splice(index, 1);
+            uploadSession(allSessions);
+            res.status(200).json({ ok: true })
+        } else {
+            res.status(400).json({ error: "Id is not correct!" });
+        }
+    }
+})
 
 app.get("/admin", function(req, res) {
     if(req.query.key == key) {
@@ -243,7 +248,7 @@ app.get("/login", function(req, res){
         if(errors.length > 0) {
             res.status(400).json(errors);
         } else {
-            const newKey = updateSession(true, req.query.id);
+            const newKey = updateSession(req.query.id);
 
             res.status(200);
             res.send(JSON.stringify(["Success!", newKey]));
