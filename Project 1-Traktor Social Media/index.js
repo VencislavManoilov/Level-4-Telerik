@@ -10,7 +10,7 @@ app.use(express.static('public'));
 
 let profiles = [], key = "", allSessions = [];
 
-fs.readFileSync('key.txt', 'utf8', function(err, data) {
+fs.readFile('key.txt', 'utf8', function(err, data) {
     if(err) {
         console.log(err);
         return;
@@ -84,11 +84,15 @@ app.get("/profiles", function(req, res) {
     res.sendFile(path.join(__dirname, "Database", "profiles.json"))
 })
 
-app.get('/profilePic/:id', (req, res) => {
+app.get("/profilePic/:id", function(req, res) {
     const id = req.params.id;
-    const imagePath = path.join(__dirname, 'Database', 'ProfilePics', id + '.jpeg');
+    const imagePath = path.join(__dirname, 'Database', 'ProfilePics', id + '.png');
     res.sendFile(imagePath);
 });
+
+app.post("/changePic", function(req, res) {
+    const ide = profiles.find(i)
+})
 
 app.get("/session", function(req, res) {
     if(!req.query.key) {
@@ -199,6 +203,11 @@ app.get("/register", function(req, res) {
             errors.push("Phone is required!");
         }
 
+        let pic = 1;
+        if(req.query.profilePic >= 1 && req.query.profilePic <= 4) {
+            pic = Math.floor(req.query.profilePic);
+        }
+
         if(errors.length > 0) {
             res.status(400).json(errors);
         } else {
@@ -212,7 +221,7 @@ app.get("/register", function(req, res) {
                 email : req.query.email,
                 password : req.query.password,
                 phone : req.query.phone,
-                profilePic : "default",
+                profilePic : "default" + pic,
                 followers : 0,
                 posts : []
             })
