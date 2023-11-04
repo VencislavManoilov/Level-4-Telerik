@@ -107,6 +107,7 @@ app.get("/getPost/:profileId/:postId", function(req, res) {
     
     const imagePath = path.join(__dirname, "Database", "Posts", profileId, postId + ".jpg");
 
+    res.status(200);
     res.sendFile(imagePath);
 })
 

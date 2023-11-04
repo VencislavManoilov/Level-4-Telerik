@@ -3,9 +3,21 @@
 <html>
     <head>
         <title>Traktora vizda vsichko</title>
+
+        <style>
+            img {
+                max-width: 25%;
+                max-height: 25%;
+                margin-left: 15px;
+                margin-right: 15px;
+            }
+        </style>
     </head>
 
     <body onload="init()">
+        <a href="/" style="font-size: 20px;">Home</a>
+        <br />
+        <br />
         <div id="Posts"></div>
     </body>
 
@@ -40,12 +52,14 @@
                     const data = JSON.parse(xhr.response);
 
                     if(data.length > 0) {
-                        document.getElementById("Posts").innerHTML += "<img src='/idProfilePic/" + id + "'>" + id +
+                        document.getElementById("Posts").innerHTML += "<img style='margin: 0' src='/idProfilePic/" + id + "'>" + id +
                         "<br />";
 
                         for(let i = 0; i < data.length; i++) {
                             document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'>";
                         }
+
+                        document.getElementById("Posts").innerHTML += "<br /><br />";
                     }
                 } else {
                     console.log(`Error: ${xhr.status}`);
