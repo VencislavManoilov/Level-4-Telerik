@@ -87,10 +87,21 @@ app.get("/profiles", function(req, res) {
 app.get("/profilePic/:id", function(req, res) {
     const id = req.params.id;
     const imagePath = path.join(__dirname, "Database", "ProfilePics", id + ".png");
+    res.status(200);
     res.sendFile(imagePath);
 });
 
-app.get("/:profileId/:postId", function(req, res) {
+app.get("/idProfilePic/:id", function(req, res) {
+    const id = req.params.id;
+    const profilePic = profiles.find(user => user.id === id).profilePic;
+
+    const imagePath = path.join(__dirname, "Database", "ProfilePics", profilePic + ".png");
+
+    res.status(200);
+    res.sendFile(imagePath);
+})
+
+app.get("/getPost/:profileId/:postId", function(req, res) {
     const profileId = req.params.profileId;
     const postId = req.params.postId;
     
@@ -99,8 +110,25 @@ app.get("/:profileId/:postId", function(req, res) {
     res.sendFile(imagePath);
 })
 
+app.get("/posts/:profileId", function(req, res) {
+    const profileId = req.params.profileId;
+    const filePath = path.join(__dirname, "Database", "Posts", profileId, "posts.json");
+
+    if (fs.existsSync(filePath)) {
+        const posts = JSON.parse(fs.readFileSync(filePath, 'utf8')).posts;
+        res.status(200).json(posts);
+    } else {
+        res.status(404).json({ error: 'File not found' });
+    }
+})
+
 app.post("/changePic", function(req, res) {
-    const ide = profiles.find(i)
+    // const ide = profiles.find(i)
+})
+
+app.get("/profileIds", function(req, res) {
+    const ids = profiles.map(obj => obj.id);
+    res.status(200).json( {ids : ids} );
 })
 
 app.get("/session", function(req, res) {
@@ -231,8 +259,7 @@ app.get("/register", function(req, res) {
                 password : req.query.password,
                 phone : req.query.phone,
                 profilePic : "default" + pic,
-                followers : 0,
-                posts : []
+                followers : 0
             })
             
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), JSON.stringify(jsonData));
@@ -281,7 +308,7 @@ app.get("/login", function(req, res){
     }
 })
 
-// app.get("/test", function(req, res) {
-//     res.status(200);
-//     res.send("Bachka");
-// })
+app.get("/browse", function(req, res) {
+    res.status(200);
+    res.sendFile(path.join(__dirname, "public", "browse.html"));
+})

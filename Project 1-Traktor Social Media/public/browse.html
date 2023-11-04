@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Traktora vizda vsichko</title>
+    </head>
+
+    <body onload="init()">
+        <div id="Posts"></div>
+    </body>
+
+    <script src="cookies.js"></script>
+
+    <script>
+        let profileIds = [], postsHTML = "";
+        const xhr = new XMLHttpRequest();
+        
+        function init() {
+            xhr.open("GET", "/profileIds", true);
+            xhr.send();
+            xhr.onload = () => {
+                if(xhr.readyState == 4 && xhr.status == 200) {
+                    profileIds = JSON.parse(xhr.response).ids;
+                    for(let i = 0; i < profileIds.length; i++) {
+                        getPosts(profileIds[i]);
+                    }
+                } else {
+                    console.log(`Error: ${xhr.status}`);
+                }
+            }
+        }
+
+        async function getPosts(id) {
+            const xhr = new XMLHttpRequest();
+
+            xhr.open("GET", "/posts/" + id, true);
+
+            xhr.onload = () => {
+                if(xhr.readyState == 4 && xhr.status == 200) {
+                    const data = JSON.parse(xhr.response);
+
+                    if(data.length > 0) {
+                        document.getElementById("Posts").innerHTML += "<img src='/idProfilePic/" + id + "'>" + id +
+                        "<br />";
+
+                        for(let i = 0; i < data.length; i++) {
+                            document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'>";
+                        }
+                    }
+                } else {
+                    console.log(`Error: ${xhr.status}`);
+                }
+            }
+
+            xhr.onerror = function () {
+                console.error('Request failed with an exception');
+            };
+
+            xhr.send();
+        }
+    </script>
+</html>
