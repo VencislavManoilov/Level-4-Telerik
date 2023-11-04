@@ -86,9 +86,18 @@ app.get("/profiles", function(req, res) {
 
 app.get("/profilePic/:id", function(req, res) {
     const id = req.params.id;
-    const imagePath = path.join(__dirname, 'Database', 'ProfilePics', id + '.png');
+    const imagePath = path.join(__dirname, "Database", "ProfilePics", id + ".png");
     res.sendFile(imagePath);
 });
+
+app.get("/:profileId/:postId", function(req, res) {
+    const profileId = req.params.profileId;
+    const postId = req.params.postId;
+    
+    const imagePath = path.join(__dirname, "Database", "Posts", profileId, postId + ".jpg");
+
+    res.sendFile(imagePath);
+})
 
 app.post("/changePic", function(req, res) {
     const ide = profiles.find(i)
