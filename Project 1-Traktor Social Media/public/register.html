@@ -1,45 +1,81 @@
 <!DOCTYPE html>
-
 <html>
-    <head>
-        <title>Register to TRAKTOR</title>
-    </head>
+<head>
+    <title>Register to TRAKTOR</title>
+</head>
+<body>
+    <button onclick="window.location.href='/'">Home</button>
 
-    <body>
-        <form>
-            <fieldset>
-                <input type="hidden" name="new" value="true"/>
-                Name:
-                <input type="text" name="name" placeholder="Enter your name"/>
-                <br/>
-                <br/>
-                Username:
-                <input type="text" name="id" placeholder="Enter your username"/>
-                <br/>
-                <br/>
-                Age:
-                <input type="number" name="age"/>
-                <br/>
-                <br/>
-                Gender:
-                <input type="radio" name="gender" value="male"/>Male
-                <input type="radio" name="gender" value="female"/>Female
-                <br/>
-                <br/>
-                Email:
-                <input type="text" name="email" placeholder="Enter your email"/>
-                <br/>
-                <br/>
-                Password:
-                <input type="password" name="password" placeholder="Enter a password"/>
-                <br/>
-                <br/>
-                Phone:
-                <input type="number" name="phone"/>
-                <br/>
-                <br/>
-                <input type="submit" name=""/>
-            </fieldset>
-        </form>
-    </body>
+    <br/>
+    <br/>
+
+    <div id="register">
+        Name:
+        <input id="name" type="text" name="name" placeholder="Enter your name"/>
+        <br/>
+        <br/>
+
+        Username:
+        <input id="id" type="text" name="id" placeholder="Enter your username"/>
+        <br/>
+        <br/>
+
+        Age:
+        <input id="age" type="number" name="age"/>
+        <br/>
+        <br/>
+
+        Gender:
+        <input type="radio" name="gender" value="male"/>Male
+        <input type="radio" name="gender" value="female"/>Female
+        <br/>
+        <br/>
+
+        Email:
+        <input id="email" type="text" name="email" placeholder="Enter your email"/>
+        <br/>
+        <br/>
+
+        Password:
+        <input id="password" type="password" name="password" placeholder="Enter a password"/>
+        <br/>
+        <br/>
+
+        Phone:
+        <input id="phone" type="number" name="phone"/>
+        <br/>
+        <br/>
+
+        <button onclick="register()">Register</button>
+        <button onclick="window.location.href='/login'">Login</button>
+    </div>
+
+    <script>
+        const xhr = new XMLHttpRequest();
+
+        function register() {
+            let name = document.getElementById("name").value;
+                id = document.getElementById("id").value;
+                age = document.getElementById("age").value;
+                gender = document.getElementsByTagName("gender").value;
+                email = document.getElementById("email").value;
+                password = document.getElementById("password").value;
+                phone = document.getElementById("phone").value;
+            ;
+
+            xhr.open("GET", "/register?new=true&name="+name+"&id="+id+"&age="+age+"&gender="+gender+"&email="+email+"&password="+password+"&phone="+phone);
+            xhr.send();
+            xhr.responseType = "json";
+            xhr.onload = () => {
+                if (xhr.readyState == 4) {
+                    const data = xhr.response;
+                    console.log(data)
+                    // if(data) {
+                    //     document.getElementById("register").innerHTML += "<p id='error'>" + data.error + "</p>"
+                    // }
+                }
+            };
+        }
+    </script>
+</body>
 </html>
