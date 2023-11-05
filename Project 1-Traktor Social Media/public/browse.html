@@ -15,6 +15,12 @@
     </head>
 
     <body onload="init()">
+        <div id="user">
+            <img id="picture" style="margin: 0;">
+            <div id="profile"></div>
+            <br />
+        </div>
+
         <a href="/" style="font-size: 20px;">Home</a>
         <br />
         <br />
@@ -24,6 +30,8 @@
     <script src="cookies.js"></script>
 
     <script>
+        document.getElementById("user").style.display = "none";
+
         let profileIds = [], postsHTML = "";
         const xhr = new XMLHttpRequest();
         
@@ -35,6 +43,24 @@
                     profileIds = JSON.parse(xhr.response).ids;
                     for(let i = 0; i < profileIds.length; i++) {
                         getPosts(profileIds[i]);
+                    }
+
+                    if(checkCookie("sessionKey")) {
+                        xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
+                        xhr.send();
+                        xhr.onload = () => {
+                            if(xhr.readyState == 4 && xhr.status == 200) {
+                                const data = JSON.parse(xhr.response);
+                                profile = data.profile;
+                                setCookie("sessionKey", getCookie("sessionKey"), 365);
+                                document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                                document.getElementById("profile").innerHTML = "<p style='margin:0'>" + data.profile.name + "</p>";
+
+                                document.getElementById("user").style.display = "inline"
+                            } else {
+                                console.log(`Error: ${xhr.status}`);
+                            }
+                        }
                     }
                 } else {
                     console.log(`Error: ${xhr.status}`);

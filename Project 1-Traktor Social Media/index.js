@@ -80,8 +80,16 @@ app.listen(PORT, function() {
 })
 
 app.get("/profiles", function(req, res) {
-    res.status(200);
-    res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+    if(req.query.key == key) {
+        res.status(200);
+        res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+    } else {
+        profilesWithoutPasswords = profiles.map(profile => {
+            const { password, ...profileWithoutPassword } = profile;
+            return profileWithoutPassword;
+        });
+        res.status(200).json(profilesWithoutPasswords);
+    }
 })
 
 app.get("/profilePic/:id", function(req, res) {
