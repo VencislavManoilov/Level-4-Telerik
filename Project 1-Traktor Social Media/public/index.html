@@ -5,16 +5,25 @@
         <title>Traktora vizda vsichko</title>
     </head>
 
-    <body onload="init()">
-        <div id="profile"></div>
+    <body>
+        <div id="user">
+            <img id="picture">
+            <div id="profile"></div>
+            <button id="logout" onclick="logout()">Logout</button>
+            <br />
+            <br />
+        </div>
 
         <div id="log" style="font-size: 25px;">
             <a href="/register">Register</a>
             <a href="/login">Login</a>
+            <br/>
+            <br/>
         </div>
-        <br/>
 
         <input type="text" name="search" id="search" placeholder="Search" autocomplete="off" oninput="search()">
+        <br />
+        <a href="/browse" style="font-size: 20px;">Browse</a>
 
         <br />
         <br />
@@ -25,35 +34,41 @@
 
     <script>
         const xhr = new XMLHttpRequest();
-        let profiles = [];
+        let profiles = [], profile = {};
+
         function init() {
-            if(checkCookie("sessionKey")) {
-                xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
-                xhr.send();
-                xhr.onload = () => {
-                    console.log("Hello");
-                    if(xhr.readyState == 4 && xhr.status == 200) {
-                        const data = JSON.parse(xhr.response);
-                        deleteCookie("sessionKey");
-                        setCookie("sessionKey", data.key, 7);
-                        console.log(data);
-                        document.getElementById("profile").innerHTML = 
-                        "<p>Hello " + data.profile.name + "</p>"
+            document.getElementById("user").style.display = "none";
 
-                        document.getElementById("log").innerHTML = "";
-                    } else {
-                        console.log(`Error: ${xhr.status}`);
-                    }
-                }
-            }
-
+            // First request
             xhr.open("GET", "/profiles");
             xhr.send();
             xhr.onload = () => {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    const data = JSON.parse(xhr.response).profiles;
+                    const data = JSON.parse(xhr.response);
                     profiles = data;
                     showProfiles(data);
+
+                    // Second request
+                    if(checkCookie("sessionKey")) {
+                        xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
+                        xhr.send();
+                        xhr.onload = () => {
+                            if(xhr.readyState == 4 && xhr.status == 200) {
+                                const data = JSON.parse(xhr.response);
+                                profile = data.profile;
+                                setCookie("sessionKey", getCookie("sessionKey"), 365);
+                                document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                                document.getElementById("profile").innerHTML = 
+                                "<p>Hello " + data.profile.name + "</p>";
+
+                                document.getElementById("user").style.display = "inline"
+
+                                document.getElementById("log").remove();
+                            } else {
+                                console.log(`Error: ${xhr.status}`);
+                            }
+                        }
+                    }
                 } else {
                     console.log(`Error: ${xhr.status}`);
                 }
@@ -64,12 +79,11 @@
             let proObject = document.getElementById("Profiles");
             document.getElementById("Profiles").innerHTML = "";
             for(i = 0; i < data.length; i++) {
-                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'>Name: " + data[i].name + 
+                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'><img src='/profilePic/" + data[i].profilePic + "'><br />Name: " + data[i].name + 
                 "<br /> Username: " + data[i].id + 
                 "<br /> Age: " + data[i].age + 
                 "<br /> Gender: " + data[i].gender + 
                 "<br /> Email: " + data[i].email + 
-                "<br /> Password: " + data[i].password + 
                 "<br /> Phone: " + data[i].phone +
                 "<br /> Followers: " + data[i].followers +
                 "</div><br />";
@@ -95,5 +109,27 @@
 
             showProfiles(show);
         }
+
+        function logout() {
+            console.log("Hello")
+            if(profile != {} && profile.id) {
+                console.log("What's up")
+                xhr.open("DELETE", "/session?id=" + profile.id);
+                xhr.send();
+                xhr.onload = () => {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        deleteCookie("sessionKey");
+                        document.location.href = "/";
+                    } else {
+                        console.log(`Error: ${xhr.status}`)
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('load', function () {
+            init();
+            // checkUser();
+        });
     </script>
 </html>

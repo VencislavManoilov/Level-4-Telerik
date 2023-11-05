@@ -19,8 +19,6 @@ fs.readFile('key.txt', 'utf8', function(err, data) {
     key = data;
 });
 
-checkSessions();
-
 function checkProfiles() {
     fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
         if(err) {
@@ -40,30 +38,14 @@ function profileIndex(id) {
 }
 
 function checkSessions() {
-    fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), function(err, data) {
-        if(err) {
-            console.log(err);
-        } else {
-            allSessions = JSON.parse(data).sessions;
-        }
-    })
+    allSessions = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), {encoding: 'utf8'})).sessions;
 }
 
-function updateSession(newUser, ide) {
+function updateSession(ide) {
     const newKey = getSessionKey();
-    if(newUser) {
-        allSessions.push({key : newKey, id : ide});
-        uploadSession(allSessions);
-    } else {
-        for(let i = 0; i < allSessions.length; i++) {
-            if(allSessions[i].id == ide) {
-                allSessions[i].key = newKey;
-                i = allSessions.length;
-            }
-        }
 
-        uploadSession(allSessions);
-    }
+    allSessions.push({key : newKey, id : ide});
+    uploadSession(allSessions);
 
     return newKey;
 }
@@ -94,27 +76,99 @@ app.get("/", function(req, res) {
 app.listen(PORT, function() {
     console.log("Listening: " + PORT);
     checkProfiles();
+    checkSessions();
 })
 
 app.get("/profiles", function(req, res) {
+    if(req.query.key == key) {
+        res.status(200);
+        res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+    } else {
+        profilesWithoutPasswords = profiles.map(profile => {
+            const { password, ...profileWithoutPassword } = profile;
+            return profileWithoutPassword;
+        });
+        res.status(200).json(profilesWithoutPasswords);
+    }
+})
+
+app.get("/profilePic/:id", function(req, res) {
+    const id = req.params.id;
+    const imagePath = path.join(__dirname, "Database", "ProfilePics", id + ".png");
     res.status(200);
-    res.sendFile(path.join(__dirname, "Database", "profiles.json"))
+    res.sendFile(imagePath);
+});
+
+app.get("/idProfilePic/:id", function(req, res) {
+    const id = req.params.id;
+    const profilePic = profiles.find(user => user.id === id).profilePic;
+
+    const imagePath = path.join(__dirname, "Database", "ProfilePics", profilePic + ".png");
+
+    res.status(200);
+    res.sendFile(imagePath);
+})
+
+app.get("/getPost/:profileId/:postId", function(req, res) {
+    const profileId = req.params.profileId;
+    const postId = req.params.postId;
+    
+    const imagePath = path.join(__dirname, "Database", "Posts", profileId, postId + ".jpg");
+
+    res.status(200);
+    res.sendFile(imagePath);
+})
+
+app.get("/posts/:profileId", function(req, res) {
+    const profileId = req.params.profileId;
+    const filePath = path.join(__dirname, "Database", "Posts", profileId, "posts.json");
+
+    if (fs.existsSync(filePath)) {
+        const posts = JSON.parse(fs.readFileSync(filePath, 'utf8')).posts;
+        res.status(200).json(posts);
+    } else {
+        res.status(404).json({ error: 'File not found' });
+    }
+})
+
+app.post("/changePic", function(req, res) {
+    // const ide = profiles.find(i)
+})
+
+app.get("/profileIds", function(req, res) {
+    const ids = profiles.map(obj => obj.id);
+    res.status(200).json( {ids : ids} );
 })
 
 app.get("/session", function(req, res) {
     if(!req.query.key) {
         res.status(400).json({ error: "Missing session key" });
     } else {
-        const session = allSessions.find(session => session.key === req.query.key);
-        if(session) {
-            const newKey = updateSession(false, session.id);
-            const profileData = profiles[profileIndex(session.id)];
-            res.status(200).json({ key: newKey, profile: profileData });
+        const theSession = allSessions.find(s => s.key == req.query.key);
+        if(theSession) {
+            const profileData = profiles[profileIndex(theSession.id)];
+            res.status(200).json({ profile: profileData });
         } else {
             res.status(400).json({ error: "Invalid session key" });
         }
     }
 });
+
+app.delete("/session", function(req, res) {
+    if(!req.query.id) {
+        res.status(400).json({ error: "Id is missing!" });
+    } else {
+        const theSession = allSessions.find(s => s.id == req.query.id);
+        if(theSession) {
+            const index = allSessions.indexOf(theSession);
+            allSessions.splice(index, 1);
+            uploadSession(allSessions);
+            res.status(200).json({ ok: true })
+        } else {
+            res.status(400).json({ error: "Id is not correct!" });
+        }
+    }
+})
 
 app.get("/admin", function(req, res) {
     if(req.query.key == key) {
@@ -195,6 +249,11 @@ app.get("/register", function(req, res) {
             errors.push("Phone is required!");
         }
 
+        let pic = 1;
+        if(req.query.profilePic >= 1 && req.query.profilePic <= 4) {
+            pic = Math.floor(req.query.profilePic);
+        }
+
         if(errors.length > 0) {
             res.status(400).json(errors);
         } else {
@@ -208,8 +267,8 @@ app.get("/register", function(req, res) {
                 email : req.query.email,
                 password : req.query.password,
                 phone : req.query.phone,
-                followers : 0,
-                posts : []
+                profilePic : "default" + pic,
+                followers : 0
             })
             
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), JSON.stringify(jsonData));
@@ -250,7 +309,7 @@ app.get("/login", function(req, res){
         if(errors.length > 0) {
             res.status(400).json(errors);
         } else {
-            const newKey = updateSession(true, req.query.id);
+            const newKey = updateSession(req.query.id);
 
             res.status(200);
             res.send(JSON.stringify(["Success!", newKey]));
@@ -258,7 +317,7 @@ app.get("/login", function(req, res){
     }
 })
 
-// app.get("/test", function(req, res) {
-//     res.status(200);
-//     res.send("Bachka");
-// })
+app.get("/browse", function(req, res) {
+    res.status(200);
+    res.sendFile(path.join(__dirname, "public", "browse.html"));
+})
