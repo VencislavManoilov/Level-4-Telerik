@@ -160,6 +160,8 @@ app.post("/post/:sessionKey", function(req, res) {
     if(!userId) {
         res.status(400).json({ error : "The session key is not correct!" });
     } else {
+        // Fix the the image thing
+
         if (!req.files || !req.files.image) {
             return res.status(400).json({ error: 'No image provided' });
         }
@@ -176,9 +178,13 @@ app.post("/post/:sessionKey", function(req, res) {
         const imageName = getSessionKey();
         fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName), imageData.data);
 
-        const userPosts = fs.readFileSync(path.join(__dirname, "database", "Posts", userId, "posts.json"), {encoding: 'utf8'});
+        const userPosts = fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'});
         console.log(userPosts);
         res.status(200).send("Almost done!");
+
+        // add the post name to userPosts
+        // save the file
+        // send
     }
 })
 

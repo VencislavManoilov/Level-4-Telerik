@@ -48,15 +48,16 @@
         }
         
         function Post() {
-            const theImage = document.getElementById("theImage").files[0];
-            if(!theImage) {
+            // Fix the image thing
+
+            const theImage = document.getElementById("theImage");
+            if(!theImage.files[0]) {
                 return;
             }
 
             const formData = new FormData();
-            formData.append("image", theImage);
-
-            console.log(theImage);
+            formData.append("image", theImage.files[0]);
+            console.log(formData);
 
             fetch('/post/' + getCookie("sessionKey"), {
                 method: 'POST',
