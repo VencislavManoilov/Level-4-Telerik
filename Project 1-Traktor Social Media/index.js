@@ -131,6 +131,21 @@ app.get("/posts/:profileId", function(req, res) {
     }
 })
 
+app.get("/post/:sessionKey", function(req, res) {
+    // Check if the session is correct
+    // If yes send the html
+    // If not send error
+})
+
+app.post("/post/:sessionKey", function(req, res) {
+    // Check if the session is correct
+    // If yes:
+    //  - Check the file
+    //  - Save the image
+    //  - Edit the json file
+    // if not send error
+})
+
 app.post("/changePic", function(req, res) {
     // const ide = profiles.find(i)
 })
