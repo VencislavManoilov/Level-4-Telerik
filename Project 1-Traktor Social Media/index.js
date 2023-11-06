@@ -41,6 +41,16 @@ function checkSessions() {
     allSessions = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "sessions.json"), {encoding: 'utf8'})).sessions;
 }
 
+function checkSession(sessionKey) {
+    const theSession = allSessions.find(s => s.key == sessionKey);
+
+    if(theSession) {
+        return theSession.id;
+    } else {
+        return false;
+    }
+}
+
 function updateSession(ide) {
     const newKey = getSessionKey();
 
@@ -132,18 +142,44 @@ app.get("/posts/:profileId", function(req, res) {
 })
 
 app.get("/post/:sessionKey", function(req, res) {
-    // Check if the session is correct
-    // If yes send the html
-    // If not send error
+    const sessionkey = req.params.sessionKey;
+    const userId = checkSession(sessionkey);
+
+    if(!userId) {
+        res.status(400).json({ error : "The session key is not correct!" });
+    } else {
+        res.status(200);
+        res.sendFile(path.join(__dirname, "public", "post.html"));
+    }
 })
 
 app.post("/post/:sessionKey", function(req, res) {
-    // Check if the session is correct
-    // If yes:
-    //  - Check the file
-    //  - Save the image
-    //  - Edit the json file
-    // if not send error
+    const sessionkey = req.params.sessionKey;
+    const userId = checkSession(sessionkey);
+
+    if(!userId) {
+        res.status(400).json({ error : "The session key is not correct!" });
+    } else {
+        if (!req.files || !req.files.image) {
+            return res.status(400).json({ error: 'No image provided' });
+        }
+
+        const imageData = req.files.image;
+        
+        const fileSizeBytes = imageData.length;
+        const fileSizeMB = fileSizeBytes / (1024 * 1024);
+
+        if(fileSizeMB > 5) {
+            return res.status(400).json({ error : "The image is too BIGGG!" });
+        }
+
+        const imageName = getSessionKey();
+        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName), imageData.data);
+
+        const userPosts = fs.readFileSync(path.join(__dirname, "database", "Posts", userId, "posts.json"), {encoding: 'utf8'});
+        console.log(userPosts);
+        res.status(200).send("Almost done!");
+    }
 })
 
 app.post("/changePic", function(req, res) {
@@ -287,6 +323,8 @@ app.get("/register", function(req, res) {
             })
             
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), JSON.stringify(jsonData));
+            fs.mkdirSync(path.join(__dirname, "Database", "Posts", req.query.id));
+            fs.writeFileSync(path.join(__dirname, "Database", "Posts", req.query.id, "posts.json"), '{"posts":[]}')
             res.status(200).json(JSON.stringify(["Success!"]));
         }
     }

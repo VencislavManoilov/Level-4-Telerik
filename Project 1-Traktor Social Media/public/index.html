@@ -25,6 +25,8 @@
         <br />
         <a href="/browse" style="font-size: 20px;">Browse</a>
 
+        <a id="post" style="font-size: 20px;">Post</a>
+
         <br />
         <br />
         <div id="Profiles"></div>
@@ -38,6 +40,7 @@
 
         function init() {
             document.getElementById("user").style.display = "none";
+            document.getElementById("post").style.display = "none";
 
             // First request
             xhr.open("GET", "/profiles");
@@ -61,7 +64,9 @@
                                 document.getElementById("profile").innerHTML = 
                                 "<p>Hello " + data.profile.name + "</p>";
 
-                                document.getElementById("user").style.display = "inline"
+                                document.getElementById("user").style.display = "inline";
+                                document.getElementById("post").style.display = "inline";
+                                document.getElementById("post").href = "/post/" + getCookie("sessionKey");
 
                                 document.getElementById("log").remove();
                             } else {
