@@ -188,6 +188,22 @@ app.post("/post/:sessionKey", function(req, res) {
     }
 })
 
+app.get("/profile/:key", function(req, res) {
+    const theKey = req.params.key;
+
+    if(!theKey) {
+        return res.status(400).json({ error : "No key found!" });
+    }
+
+    const theSession = allSessions.find(s => s.key == theKey);
+
+    if(!theSession) {
+        return res.status(400).json({ error : "Session key is not correct!" });
+    }
+
+    res.sendFile(path.join(__dirname, "public", "profile.html"));
+})
+
 app.post("/changePic", function(req, res) {
     // const ide = profiles.find(i)
 })

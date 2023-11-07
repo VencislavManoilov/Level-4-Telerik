@@ -23,8 +23,9 @@
 
         <input type="text" name="search" id="search" placeholder="Search" autocomplete="off" oninput="search()">
         <br />
-        <a href="/browse" style="font-size: 20px;">Browse</a>
 
+        <a id="Profile" style="font-size: 20px;">Profile</a>
+        <a href="/browse" style="font-size: 20px;">Browse</a>
         <a id="post" style="font-size: 20px;">Post</a>
 
         <br />
@@ -41,6 +42,7 @@
         function init() {
             document.getElementById("user").style.display = "none";
             document.getElementById("post").style.display = "none";
+            document.getElementById("Profile").style.display = "none";
 
             // First request
             xhr.open("GET", "/profiles");
@@ -66,7 +68,10 @@
 
                                 document.getElementById("user").style.display = "inline";
                                 document.getElementById("post").style.display = "inline";
+                                document.getElementById("Profile").style.display = "inline";
                                 document.getElementById("post").href = "/post/" + getCookie("sessionKey");
+                                document.getElementById("Profile").href = "/profile/" + getCookie("sessionKey");
+
 
                                 document.getElementById("log").remove();
                             } else {

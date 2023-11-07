@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Traktora vizda vsichko</title>
+
+        <style>
+            img {
+                max-width: 25%;
+                max-height: 25%;
+                margin-left: 15px;
+                margin-right: 15px;
+            }
+        </style>
+    </head>
+
+    <body onload="init()">
+        <div id="user">
+            <img id="picture" style="margin: 0;">
+            <div id="profile"></div>
+            <br />
+        </div>
+
+        <a href="/" style="font-size: 20px;">Home</a>
+
+        <p style="font-size: 30px; margin: 0; margin-top: 15px; margin-bottom: 10px; font-weight: bolder; font-family: arial;">Your Posts</p>
+        <div id="Posts"></div>
+    </body>
+
+    <script src="../cookies.js"></script>
+
+    <script>
+        document.getElementById("user").style.display = "none";
+
+        let profile, postsHTML = "";
+        const xhr = new XMLHttpRequest();
+        
+        function init() {
+            if(checkCookie("sessionKey")) {
+                xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
+                xhr.send();
+                xhr.onload = () => {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        const data = JSON.parse(xhr.response);
+                        profile = data.profile;
+                        setCookie("sessionKey", getCookie("sessionKey"), 365);
+                        document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                        document.getElementById("profile").innerHTML = "<p style='margin:0'>" + profile.name + "</p>";
+
+                        document.getElementById("user").style.display = "inline"
+
+                        getPosts(profile.id)
+                    } else {
+                        console.log(`Error: ${xhr.status}`);
+                    }
+                }
+            }
+        }
+
+        async function getPosts(id) {
+            const xhr = new XMLHttpRequest();
+
+            xhr.open("GET", "/posts/" + id, true);
+
+            xhr.onload = () => {
+                if(xhr.readyState == 4 && xhr.status == 200) {
+                    const data = JSON.parse(xhr.response);
+
+                    if(data.length > 0) {
+                        for(let i = 0; i < data.length; i++) {
+                            document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'>";
+                        }
+
+                        document.getElementById("Posts").innerHTML += "<br /><br />";
+                    }
+                } else {
+                    console.log(`Error: ${xhr.status}`);
+                }
+            }
+
+            xhr.onerror = function () {
+                console.error('Request failed with an exception');
+            };
+
+            xhr.send();
+        }
+    </script>
+</html>
