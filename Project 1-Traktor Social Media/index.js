@@ -5,8 +5,10 @@ const PORT = 3000;
 const fs = require("fs");
 const validator = require("email-validator");
 const { type } = require("os");
+const fileUpload = require("express-fileupload");
 
 app.use(express.static('public'));
+app.use(fileUpload());
 
 let profiles = [], key = "", allSessions = [];
 
@@ -160,10 +162,8 @@ app.post("/post/:sessionKey", function(req, res) {
     if(!userId) {
         res.status(400).json({ error : "The session key is not correct!" });
     } else {
-        // Fix the the image thing
-
-        if (!req.files || !req.files.image) {
-            return res.status(400).json({ error: 'No image provided' });
+        if(!req.files.image) {
+            return res.status(400).json({ error: "No image provided" });
         }
 
         const imageData = req.files.image;
@@ -176,15 +176,15 @@ app.post("/post/:sessionKey", function(req, res) {
         }
 
         const imageName = getSessionKey();
-        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName), imageData.data);
+        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), imageData.data);
 
-        const userPosts = fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'});
-        console.log(userPosts);
-        res.status(200).send("Almost done!");
+        let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
+        
+        userPosts.posts.push({ id : imageName });
+        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(userPosts));
 
-        // add the post name to userPosts
-        // save the file
-        // send
+
+        res.status(200).send({massage : "Successfully posted!"});
     }
 })
 

@@ -16,13 +16,14 @@
 
         <a href="/" style="font-size: 20px;">Home</a>
         
-        <input type="file" id="theImage">
+        <input type="file" id="theImage" accept="image/jpeg, image/jpg">
         <button onclick="Post()">Post</button>
     </body>
 
     <script src="../cookies.js"></script>
 
     <script>
+        let selectedFile;
         const xhr = new XMLHttpRequest();
 
         function init() {
@@ -46,30 +47,30 @@
                 document.location.href = "/";
             }
         }
+
+        const fileInput = document.getElementById("theImage");
+        fileInput.addEventListener("change", function (e) {
+            selectedFile = e.target.files[0];
+        });
         
         function Post() {
-            // Fix the image thing
+            const xhr = new XMLHttpRequest();
 
-            const theImage = document.getElementById("theImage");
-            if(!theImage.files[0]) {
-                return;
+            if(selectedFile) {
+                xhr.onload = function () {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        alert("You successfully made a post!");
+                        document.location.href = "/";
+                    }
+                };
+    
+                const formData = new FormData();
+                formData.append("image", selectedFile);
+    
+                xhr.open("POST", "/post/" + getCookie("sessionKey"), true);
+    
+                xhr.send(formData);
             }
-
-            const formData = new FormData();
-            formData.append("image", theImage.files[0]);
-            console.log(formData);
-
-            fetch('/post/' + getCookie("sessionKey"), {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Image sent successfully:', data);
-            })
-            .catch(error => {
-                console.error('Error sending image:', error);
-            });
         }
     </script>
 </html>
