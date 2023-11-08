@@ -68,7 +68,8 @@
 
                     if(data.length > 0) {
                         for(let i = 0; i < data.length; i++) {
-                            document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'>";
+                            let theId = "deletePost('" + data[i].id + "')";
+                            document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'><button onclick="+theId+">Delete</button>";
                         }
 
                         document.getElementById("Posts").innerHTML += "<br /><br />";
@@ -83,6 +84,15 @@
             };
 
             xhr.send();
+        }
+
+        function deletePost(id) {
+            xhr.open("DELETE", "/profile/" + getCookie("sessionKey") + "/" + id);
+            xhr.send();
+            xhr.onload = () => {
+                alert(xhr.response);
+                document.location.href = "/";
+            }
         }
     </script>
 </html>

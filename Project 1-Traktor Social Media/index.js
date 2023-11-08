@@ -234,13 +234,13 @@ app.delete("/profile/:key/:postId", function(req, res) {
     if(!checkTheSession) {
         res.status(400).json({ error : "Key is not correct!" });
     }
+    
+    let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", checkTheSession, "posts.json"), {encoding: 'utf8'}));
+    
+    const updatedPosts = {posts : userPosts.posts.filter(post => post.id != postId)};
+    fs.writeFileSync(path.join(__dirname, "Database", "Posts", checkTheSession, "posts.json"), JSON.stringify(updatedPosts));
 
     deleteFile(path.join(__dirname, "Database", "Posts", checkTheSession, postId + ".jpg"));
-
-    let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
-        
-    const updatedPosts = userPosts.filter(post => post.id !== postId);
-    fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(updatedPosts));
 
     res.status(200).json({ message : "Successfully deleted post!" });
 })
