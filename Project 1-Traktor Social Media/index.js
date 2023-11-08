@@ -80,6 +80,31 @@ function getSessionKey() {
     return sessionKey;
 }
 
+function deleteFolderRecursive(path) {
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach((file) => {
+            const curPath = path + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) {
+                deleteFolderRecursive(curPath);
+            } else {
+                fs.unlinkSync(curPath);
+            }
+        });
+    
+        // Finally, remove the empty directory
+        fs.rmdirSync(path);
+    }
+}
+
+function deleteFile(filePath) {
+    try {
+        fs.unlinkSync(filePath);
+        console.log(`File "${filePath}" has been deleted.`);
+    } catch (err) {
+        console.error(`Error deleting file "${filePath}": ${err.message}`);
+    }
+}
+
 app.get("/", function(req, res) {
     res.status(200);
     res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -184,24 +209,40 @@ app.post("/post/:sessionKey", function(req, res) {
         fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(userPosts));
 
 
-        res.status(200).send({massage : "Successfully posted!"});
+        res.status(200).send({message : "Successfully posted!"});
     }
 })
 
 app.get("/profile/:key", function(req, res) {
     const theKey = req.params.key;
 
-    if(!theKey) {
-        return res.status(400).json({ error : "No key found!" });
-    }
+    const checkTheSession = checkSession(theKey);
 
-    const theSession = allSessions.find(s => s.key == theKey);
-
-    if(!theSession) {
-        return res.status(400).json({ error : "Session key is not correct!" });
+    if(!checkTheSession) {
+        res.status(400).json({ error : "Key is not correct!" });
     }
 
     res.sendFile(path.join(__dirname, "public", "profile.html"));
+})
+
+app.delete("/profile/:key/:postId", function(req, res) {
+    const theKey = req.params.key;
+    const postId = req.params.postId;
+
+    const checkTheSession = checkSession(theKey);
+
+    if(!checkTheSession) {
+        res.status(400).json({ error : "Key is not correct!" });
+    }
+
+    deleteFile(path.join(__dirname, "Database", "Posts", checkTheSession, postId + ".jpg"));
+
+    let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
+        
+    const updatedPosts = userPosts.filter(post => post.id !== postId);
+    fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(updatedPosts));
+
+    res.status(200).json({ message : "Successfully deleted post!" });
 })
 
 app.post("/changePic", function(req, res) {
@@ -259,6 +300,7 @@ app.delete("/admin", function(req, res) {
         const found = profiles.some(el => el.id === req.query.id);
         if(found) {
             const index = profiles.findIndex(el => el.id === req.query.id);
+            deleteFolderRecursive(path.join(__dirname, "Database", "Posts", req.query.id));
             profiles.splice(index, 1);
             fs.writeFileSync(path.join(__dirname, "Database", "profiles.json"), '{"profiles":' + JSON.stringify(profiles) + '}');
             checkProfiles();
