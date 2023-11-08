@@ -99,7 +99,6 @@ function deleteFolderRecursive(path) {
 function deleteFile(filePath) {
     try {
         fs.unlinkSync(filePath);
-        console.log(`File "${filePath}" has been deleted.`);
     } catch (err) {
         console.error(`Error deleting file "${filePath}": ${err.message}`);
     }
