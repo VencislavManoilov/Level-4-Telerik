@@ -21,6 +21,10 @@ fs.readFile('key.txt', 'utf8', function(err, data) {
     key = data;
 });
 
+function randomInteger(max) {
+    return Math.floor(Math.random() * max);
+}
+
 function checkProfiles() {
     fs.readFile(path.join(__dirname, "Database", "profiles.json"), function(err, data) {
         if(err) {
@@ -104,6 +108,22 @@ function deleteFile(filePath) {
     }
 }
 
+function getRandomPost(userId) {
+    const userPath = path.join(__dirname, "Database", "Posts", userId, "posts.json");
+
+    if(!fs.existsSync(userPath)) {
+        return false;
+    }
+
+    const userPosts = JSON.parse(fs.readFileSync(userPath, { encoding : "utf8" })).posts;
+
+    if(userPosts.length == 0) {
+        return false;
+    }
+
+    return userPosts[randomInteger(userPosts.length)].id;
+}
+
 app.get("/", function(req, res) {
     res.status(200);
     res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -168,6 +188,18 @@ app.get("/posts/:profileId", function(req, res) {
     } else {
         res.status(404).json({ error: 'File not found' });
     }
+})
+
+app.get("/randomPost", function(req, res) {
+    let theId = profiles[randomInteger(profiles.length)].id;
+    let thePost = getRandomPost(theId);
+
+    while(!thePost) {
+        theId = profiles[randomInteger(profiles.length)].id
+        thePost = getRandomPost(theId);
+    }
+
+    res.status(200).send({ id : theId, postId : thePost });
 })
 
 app.get("/post/:sessionKey", function(req, res) {
