@@ -150,9 +150,12 @@ app.get("/getPost/:profileId/:postId", function(req, res) {
     const postId = req.params.postId;
     
     const imagePath = path.join(__dirname, "Database", "Posts", profileId, postId + ".jpg");
-
-    res.status(200);
-    res.sendFile(imagePath);
+    if(fs.existsSync(imagePath)) {
+        res.status(200);
+        res.sendFile(imagePath);
+    } else {
+        res.status(400).json({ error : "Post not found!" });
+    }
 })
 
 app.get("/posts/:profileId", function(req, res) {
