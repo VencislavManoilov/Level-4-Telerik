@@ -11,6 +11,14 @@
                 margin-left: 15px;
                 margin-right: 15px;
             }
+
+            .Post .thePost {
+                width: 25%;
+            }
+
+            .Post br {
+                width: 25%;
+            }
         </style>
     </head>
 
@@ -36,65 +44,58 @@
         const xhr = new XMLHttpRequest();
         
         function init() {
-            xhr.open("GET", "/profileIds", true);
-            xhr.send();
-            xhr.onload = () => {
-                if(xhr.readyState == 4 && xhr.status == 200) {
-                    profileIds = JSON.parse(xhr.response).ids;
-                    for(let i = 0; i < profileIds.length; i++) {
-                        getPosts(profileIds[i]);
-                    }
+            if(checkCookie("sessionKey")) {
+                const xhrProfile = new XMLHttpRequest();
+                xhrProfile.open("GET", "/session?key=" + getCookie("sessionKey"), true);
+                xhrProfile.send();
+                xhrProfile.onload = () => {
+                    if(xhrProfile.readyState == 4 && xhrProfile.status == 200) {
+                        const data = JSON.parse(xhrProfile.response);
+                        profile = data.profile;
+                        setCookie("sessionKey", getCookie("sessionKey"), 365);
+                        document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                        document.getElementById("profile").innerHTML = "<p style='margin:0'>" + data.profile.name + "</p>";
 
-                    if(checkCookie("sessionKey")) {
-                        xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
-                        xhr.send();
-                        xhr.onload = () => {
-                            if(xhr.readyState == 4 && xhr.status == 200) {
-                                const data = JSON.parse(xhr.response);
-                                profile = data.profile;
-                                setCookie("sessionKey", getCookie("sessionKey"), 365);
-                                document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
-                                document.getElementById("profile").innerHTML = "<p style='margin:0'>" + data.profile.name + "</p>";
-
-                                document.getElementById("user").style.display = "inline"
-                            } else {
-                                console.log(`Error: ${xhr.status}`);
-                            }
-                        }
+                        document.getElementById("user").style.display = "inline";
+                    } else {
+                        console.log(`Error: ${xhrProfile.status}`);
                     }
-                } else {
-                    console.log(`Error: ${xhr.status}`);
                 }
+            }
+
+            for(let i = 0; i < 5; i++) {
+                randomPost();
             }
         }
 
-        async function getPosts(id) {
+        async function randomPost() {
             const xhr = new XMLHttpRequest();
-
-            xhr.open("GET", "/posts/" + id, true);
+            xhr.open("GET", "/randomPost");
 
             xhr.onload = () => {
                 if(xhr.readyState == 4 && xhr.status == 200) {
                     const data = JSON.parse(xhr.response);
+                    const postsDiv = document.createElement("div");
+                    const id = data.id;
+                    const postId = data.postId;
+                    
+                    postsDiv.className = "Post";
+                    postsDiv.innerHTML += "<img style='margin: 0' src='/idProfilePic/" + id + "'>" + id + "<br />";
 
-                    if(data.length > 0) {
-                        document.getElementById("Posts").innerHTML += "<img style='margin: 0' src='/idProfilePic/" + id + "'>" + id +
-                        "<br />";
+                    postsDiv.innerHTML += "<br />";
 
-                        for(let i = 0; i < data.length; i++) {
-                            document.getElementById("Posts").innerHTML += "<img src='/getPost/"+id+"/"+data[i].id+"'>";
-                        }
+                    postsDiv.innerHTML += "<img class='thePost' src='/getPost/" + id + "/" + postId + "'>";
 
-                        document.getElementById("Posts").innerHTML += "<br /><br />";
-                    }
+                    document.getElementById("Posts").appendChild(postsDiv);
+                    document.getElementById("Posts").innerHTML += "<br />";
                 } else {
                     console.log(`Error: ${xhr.status}`);
                 }
             }
 
-            xhr.onerror = function () {
-                console.error('Request failed with an exception');
-            };
+            xhr.onerror = () => {
+                console.error("Request failed with an exception");
+            }
 
             xhr.send();
         }
