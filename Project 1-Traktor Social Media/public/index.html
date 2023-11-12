@@ -33,6 +33,10 @@
         <div id="Profiles"></div>
     </body>
 
+    <noscript>
+        Why you don't use javascript you stupid piece of shit!?
+    </noscript>
+
     <script src="cookies.js"></script>
 
     <script>
@@ -63,7 +67,7 @@
                                 profile = data.profile;
                                 setCookie("sessionKey", getCookie("sessionKey"), 365);
                                 document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
-                                document.getElementById("profile").innerHTML = 
+                                document.getElementById("profile").innerHTML =
                                 "<p>Hello " + data.profile.name + "</p>";
 
                                 document.getElementById("user").style.display = "inline";
@@ -89,11 +93,11 @@
             let proObject = document.getElementById("Profiles");
             document.getElementById("Profiles").innerHTML = "";
             for(i = 0; i < data.length; i++) {
-                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'><img src='/profilePic/" + data[i].profilePic + "'><br />Name: " + data[i].name + 
-                "<br /> Username: " + data[i].id + 
-                "<br /> Age: " + data[i].age + 
-                "<br /> Gender: " + data[i].gender + 
-                "<br /> Email: " + data[i].email + 
+                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'><img src='/profilePic/" + data[i].profilePic + "'><br />Name: " + data[i].name +
+                "<br /> Username: " + data[i].id +
+                "<br /> Age: " + data[i].age +
+                "<br /> Gender: " + data[i].gender +
+                "<br /> Email: " + data[i].email +
                 "<br /> Phone: " + data[i].phone +
                 "<br /> Followers: " + data[i].followers +
                 "</div><br />";
