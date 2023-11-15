@@ -90,8 +90,13 @@
             xhr.open("DELETE", "/profile/" + getCookie("sessionKey") + "/" + id);
             xhr.send();
             xhr.onload = () => {
+<<<<<<< HEAD
                 alert(xhr.response);
                 document.location.href = "/";
+=======
+                alert(JSON.parse(xhr.response).message);
+                document.location.href = "/profile/" + getCookie("sessionKey");
+>>>>>>> master
             }
         }
     </script>

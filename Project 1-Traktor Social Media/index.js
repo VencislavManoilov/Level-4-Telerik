@@ -6,6 +6,10 @@ const fs = require("fs");
 const validator = require("email-validator");
 const { type } = require("os");
 const fileUpload = require("express-fileupload");
+<<<<<<< HEAD
+=======
+const sharp = require('sharp');
+>>>>>>> master
 
 app.use(express.static('public'));
 app.use(fileUpload());
@@ -226,6 +230,10 @@ app.post("/post/:sessionKey", function(req, res) {
         }
 
         const imageData = req.files.image;
+<<<<<<< HEAD
+=======
+        const type = imageData.mimetype.slice(6, imageData.mimetype.length);
+>>>>>>> master
         
         const fileSizeBytes = imageData.length;
         const fileSizeMB = fileSizeBytes / (1024 * 1024);
@@ -235,6 +243,7 @@ app.post("/post/:sessionKey", function(req, res) {
         }
 
         const imageName = getSessionKey();
+<<<<<<< HEAD
         fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), imageData.data);
 
         let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
@@ -244,6 +253,33 @@ app.post("/post/:sessionKey", function(req, res) {
 
 
         res.status(200).send({message : "Successfully posted!"});
+=======
+        if(type == "jpeg") {
+            fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), imageData.data);
+            let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
+        
+            userPosts.posts.push({ id : imageName });
+            fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(userPosts));
+
+            res.status(200).send({message : "Successfully posted!"});
+        } else {
+            sharp(imageData.data)
+            .toFormat('jpeg')
+            .toFile(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), (err, info) => {
+                if (err) {
+                    return res.status(500).json({ error: "Error converting image to JPEG" });
+                }
+
+                // Continue with your logic
+                let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), { encoding: "utf8" }));
+
+                userPosts.posts.push({ id: imageName });
+                fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(userPosts));
+
+                res.status(200).send({ message: "Successfully posted!" });
+            });
+        }
+>>>>>>> master
     }
 })
 
