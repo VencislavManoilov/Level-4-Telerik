@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Register to TRAKTOR</title>
+
+        <style>
+            .error {
+                color: red;
+            }
+            .success {
+                color: green;
+            }
+        </style>
+    </head>
+
+    <body>
+        <button onclick="window.location.href='/'">Home</button>
+
+        <br />
+        <br />
+
+        <div id="login">
+            <input type="hidden" name="new" value="true"/>
+            Username:
+            <input id="id" type="text" name="id" placeholder="Enter your username"/>
+            <br/>
+            <br/>
+            Password:
+            <input id="password" type="password" name="password" placeholder="Enter your password"/>
+            <br/>
+            <br/>
+            <button onclick="login()">Login</button>
+            <button onclick="window.location.href='/register'">Register</button>
+        </div>
+
+        <div id="messages"></div>
+
+        <script src="cookies.js"></script>
+
+        <script>
+            const xhr = new XMLHttpRequest();
+
+            function login() {
+                let id = document.getElementById("id").value,
+                    password = document.getElementById("password").value
+                ;
+
+                xhr.open("GET", "/login?new=true&id="+id+"&password="+password);
+                xhr.send();
+                xhr.onload = () => {
+                    if (xhr.readyState == 4) {
+                        const data = JSON.parse(xhr.response);
+                        document.getElementById("messages").innerHTML = "";
+                        if(data) {
+                            if(data[0] == "Success!") {
+                                const key = data[1];
+                                setCookie("sessionKey", key, 7);
+                                document.location.href = "/";
+                            } else {
+                                for(let i = 0; i < data.length; i++) {
+                                    document.getElementById("messages").innerHTML += "<p class='error'>" + data[i] + "</p>";
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+        </script>
+    </body>
+</html>

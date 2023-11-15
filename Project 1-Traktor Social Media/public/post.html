@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>You are an idiot</title>
+    </head>
+
+    <body onload="init()">
+        <p style="font-size: 50px; font-family: arial; text-align: center; margin: 0;">This is the post page</p>
+
+        <div id="user">
+            <img id="picture" style="margin: 0;">
+            <div id="profile"></div>
+            <br />
+        </div>
+
+        <a href="/" style="font-size: 20px;">Home</a>
+        
+        <input type="file" id="theImage" required="image/*" />
+        <button onclick="Post()">Post</button>
+    </body>
+
+    <script src="../cookies.js"></script>
+
+    <script>
+        let selectedFile;
+        const xhr = new XMLHttpRequest();
+
+        function init() {
+            if(checkCookie("sessionKey")) {
+                xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
+                xhr.send();
+                xhr.onload = () => {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        const data = JSON.parse(xhr.response);
+                        profile = data.profile;
+                        setCookie("sessionKey", getCookie("sessionKey"), 365);
+                        document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                        document.getElementById("profile").innerHTML = "<p style='margin:0'>" + data.profile.name + "</p>";
+
+                        document.getElementById("user").style.display = "inline"
+                    } else {
+                        console.log(`Error: ${xhr.status}`);
+                    }
+                }
+            } else {
+                document.location.href = "/";
+            }
+        }
+
+        const fileInput = document.getElementById("theImage");
+        fileInput.addEventListener("change", function (e) {
+            selectedFile = e.target.files[0];
+        });
+        
+        function Post() {
+            const xhr = new XMLHttpRequest();
+
+            if(selectedFile) {
+                xhr.onload = function () {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        alert("You successfully made a post!");
+                        document.location.href = "/";
+                    }
+                };
+    
+                const formData = new FormData();
+                formData.append("image", selectedFile);
+    
+                xhr.open("POST", "/post/" + getCookie("sessionKey"), true);
+    
+                xhr.send(formData);
+            }
+        }
+    </script>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Traktora vizda vsichko</title>
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #fafafa;
+                margin: 0;
+                padding: 0;
+            }
+
+            #user {
+                display: flex;
+                align-items: center;
+                padding: 15px;
+                margin-left: 5px;
+            }
+
+            #picture {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                margin-right: 15px;
+            }
+
+            #profile {
+                font-size: 16px;
+                margin-left: 5px;
+            }
+
+            #nav {
+                background-color: #fff;
+                padding: 10px;
+                text-align: center;
+            }
+
+            #Posts {
+                padding: 15px;
+            }
+
+            .Post {
+                width: 25%; 
+                margin: auto;
+                background-color: #fff;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+
+            .Post img {
+                width: 100%;
+                height: auto;
+            }
+
+            .Post .profilePic {
+                width: auto;
+            }
+        </style>
+    </head>
+
+    <body onload="init()">
+        <div id="user">
+            <img id="picture" style="margin: 0;">
+            <div id="profile"></div>
+        </div>
+    
+        <div id="nav">
+            <a href="/" style="font-size: 20px; text-decoration: none; color: #333;">Home</a>
+        </div>
+    
+        <div id="Posts"></div>
+    
+        <script src="cookies.js"></script>
+
+        <script>
+            document.getElementById("user").style.display = "none";
+
+            let profileIds = [], postsHTML = "";
+            const xhr = new XMLHttpRequest();
+            
+            function init() {
+                if(checkCookie("sessionKey")) {
+                    const xhrProfile = new XMLHttpRequest();
+                    xhrProfile.open("GET", "/session?key=" + getCookie("sessionKey"), true);
+                    xhrProfile.send();
+                    xhrProfile.onload = () => {
+                        if(xhrProfile.readyState == 4 && xhrProfile.status == 200) {
+                            const data = JSON.parse(xhrProfile.response);
+                            profile = data.profile;
+                            setCookie("sessionKey", getCookie("sessionKey"), 365);
+                            document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                            document.getElementById("profile").innerHTML = "<p style='margin:0'>" + data.profile.name + "</p>";
+
+                            document.getElementById("user").style.display = "inline";
+                        } else {
+                            console.log(`Error: ${xhrProfile.status}`);
+                        }
+                    }
+                }
+
+                for(let i = 0; i < 15; i++) {
+                    randomPost();
+                }
+            }
+
+            async function randomPost() {
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", "/randomPost");
+
+                xhr.onload = () => {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        const data = JSON.parse(xhr.response);
+                        const postsDiv = document.createElement("div");
+                        const id = data.id;
+                        const postId = data.postId;
+                        
+                        postsDiv.className = "Post";
+                        postsDiv.innerHTML += "<img class='profilePic' style='margin: 0' src='/idProfilePic/" + id + "'>" + id + "<br />";
+
+                        postsDiv.innerHTML += "<br />";
+
+                        postsDiv.innerHTML += "<img class='thePost' src='/getPost/" + id + "/" + postId + "'>";
+
+                        document.getElementById("Posts").appendChild(postsDiv);
+                        document.getElementById("Posts").innerHTML += "<br /><br /><br />";
+                    } else {
+                        console.log(`Error: ${xhr.status}`);
+                    }
+                }
+
+                xhr.onerror = () => {
+                    console.error("Request failed with an exception");
+                }
+
+                xhr.send();
+            }
+        </script>
+    </body>
+</html>

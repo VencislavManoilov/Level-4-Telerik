@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Traktora vizda vsichko</title>
+    </head>
+
+    <body>
+        <div id="user">
+            <img id="picture">
+            <div id="profile"></div>
+            <button id="logout" onclick="logout()">Logout</button>
+            <br />
+            <br />
+        </div>
+
+        <div id="log" style="font-size: 25px;">
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+            <br/>
+            <br/>
+        </div>
+
+        <input type="text" name="search" id="search" placeholder="Search" autocomplete="off" oninput="search()">
+        <br />
+
+        <a id="Profile" style="font-size: 20px;">Profile</a>
+        <a href="/browse" style="font-size: 20px;">Browse</a>
+        <a id="post" style="font-size: 20px;">Post</a>
+
+        <br />
+        <br />
+        <div id="Profiles"></div>
+    </body>
+
+    <noscript>
+        Why you don't use javascript you stupid piece of shit!?
+    </noscript>
+
+    <script src="cookies.js"></script>
+
+    <script>
+        const xhr = new XMLHttpRequest();
+        let profiles = [], profile = {};
+
+        function init() {
+            document.getElementById("user").style.display = "none";
+            document.getElementById("post").style.display = "none";
+            document.getElementById("Profile").style.display = "none";
+
+            // First request
+            xhr.open("GET", "/profiles");
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    const data = JSON.parse(xhr.response);
+                    profiles = data;
+                    showProfiles(data);
+
+                    // Second request
+                    if(checkCookie("sessionKey")) {
+                        xhr.open("GET", "/session?key=" + getCookie("sessionKey"));
+                        xhr.send();
+                        xhr.onload = () => {
+                            if(xhr.readyState == 4 && xhr.status == 200) {
+                                const data = JSON.parse(xhr.response);
+                                profile = data.profile;
+                                setCookie("sessionKey", getCookie("sessionKey"), 365);
+                                document.getElementById("picture").src = "/profilePic/" + profile.profilePic;
+                                document.getElementById("profile").innerHTML =
+                                "<p>Hello " + data.profile.name + "</p>";
+
+                                document.getElementById("user").style.display = "inline";
+                                document.getElementById("post").style.display = "inline";
+                                document.getElementById("Profile").style.display = "inline";
+                                document.getElementById("post").href = "/post/" + getCookie("sessionKey");
+                                document.getElementById("Profile").href = "/profile/" + getCookie("sessionKey");
+
+
+                                document.getElementById("log").remove();
+                            } else {
+                                console.log(`Error: ${xhr.status}`);
+                            }
+                        }
+                    }
+                } else {
+                    console.log(`Error: ${xhr.status}`);
+                }
+            };
+        }
+
+        function showProfiles(data) {
+            let proObject = document.getElementById("Profiles");
+            document.getElementById("Profiles").innerHTML = "";
+            for(i = 0; i < data.length; i++) {
+                document.getElementById("Profiles").innerHTML += "<div id = '" + data[i].id + "'><img src='/profilePic/" + data[i].profilePic + "'><br />Name: " + data[i].name +
+                "<br /> Username: " + data[i].id +
+                "<br /> Age: " + data[i].age +
+                "<br /> Gender: " + data[i].gender +
+                "<br /> Email: " + data[i].email +
+                "<br /> Phone: " + data[i].phone +
+                "<br /> Followers: " + data[i].followers +
+                "</div><br />";
+            }
+        }
+
+        function search() {
+            const value = document.getElementById("search").value;
+            const matchingIndexes = [];
+
+            for (let i = 0; i < profiles.length; i++) {
+                const obj = profiles[i];
+
+                if (obj.id.includes(value) || obj.name.includes(value)) {
+                    matchingIndexes.push(i);
+                }
+            }
+
+            let show = [];
+            for(let i = 0; i < matchingIndexes.length; i++) {
+                show.push(profiles[matchingIndexes[i]]);
+            }
+
+            showProfiles(show);
+        }
+
+        function logout() {
+            console.log("Hello")
+            if(profile != {} && profile.id) {
+                console.log("What's up")
+                xhr.open("DELETE", "/session?id=" + profile.id);
+                xhr.send();
+                xhr.onload = () => {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        deleteCookie("sessionKey");
+                        document.location.href = "/";
+                    } else {
+                        console.log(`Error: ${xhr.status}`)
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('load', function () {
+            init();
+            // checkUser();
+        });
+    </script>
+</html>

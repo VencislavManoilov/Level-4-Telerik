@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Register to TRAKTOR</title>
+
+        <style>
+            .error {
+                color: red;
+            }
+            .success {
+                color: green;
+            }
+        </style>
+    </head>
+
+    <body>
+        <button onclick="window.location.href='/'">Home</button>
+
+        <br/>
+        <br/>
+
+        <div id="register">
+            <input id="default1" type="radio" name="profilePic" value="1"/><img src="/profilePic/default1">
+            <input id="default2" type="radio" name="profilePic" value="2"/><img src="/profilePic/default2">
+            <input id="default3" type="radio" name="profilePic" value="3"/><img src="/profilePic/default3">
+            <input id="default4" type="radio" name="profilePic" value="4"/><img src="/profilePic/default4">
+            <br />
+            <br />
+
+            Name:
+            <input id="name" type="text" name="name" placeholder="Enter your name"/>
+            <br/>
+            <br/>
+
+            Username:
+            <input id="id" type="text" name="id" placeholder="Enter your username"/>
+            <br/>
+            <br/>
+
+            Age:
+            <input id="age" type="number" name="age"/>
+            <br/>
+            <br/>
+
+            Gender:
+            <input id="male" type="radio" name="gender" value="male"/>Male
+            <input id="female" type="radio" name="gender" value="female"/>Female
+            <br/>
+            <br/>
+
+            Email:
+            <input id="email" type="text" name="email" placeholder="Enter your email"/>
+            <br/>
+            <br/>
+
+            Password:
+            <input id="password" type="password" name="password" placeholder="Enter a password"/>
+            <br/>
+            <br/>
+
+            Phone:
+            <input id="phone" type="number" name="phone"/>
+            <br/>
+            <br/>
+
+            <button onclick="register()">Register</button>
+            <button onclick="window.location.href='/login'">Login</button>
+        </div>
+
+        <div id="messages"></div>
+
+        <script>
+            const xhr = new XMLHttpRequest();
+
+            function register() {
+                let name = document.getElementById("name").value,
+                    id = document.getElementById("id").value,
+                    age = document.getElementById("age").value,
+                    email = document.getElementById("email").value,
+                    password = document.getElementById("password").value,
+                    phone = document.getElementById("phone").value,
+                    profilePic = 1,
+                    gender = ""
+                ;
+
+                if(document.getElementById("male").checked) {
+                    gender = "male";
+                } else if(document.getElementById("female").checked) {
+                    gender = "female";
+                }
+
+                if(document.getElementById("default1").checked) {
+                    profilePic = 1
+                } else if(document.getElementById("default2").checked) {
+                    profilePic = 2
+                } else if(document.getElementById("default3").checked) {
+                    profilePic = 3
+                } else if(document.getElementById("default4").checked) {
+                    profilePic = 4
+                }
+
+                xhr.open("GET", "/register?new=true&name="+name+"&id="+id+"&age="+age+"&gender="+gender+"&email="+email+"&password="+password+"&profilePic="+profilePic+"&phone="+phone);
+                xhr.send();
+                xhr.responseType = "json";
+                xhr.onload = () => {
+                    if (xhr.readyState == 4) {
+                        const data = JSON.parse(xhr.response);
+                        document.getElementById("messages").innerHTML = "";
+                        if(data) {
+                            if(data[0] == "Success!") {
+                                document.getElementById("messages").innerHTML = "<p class='success'>Account is successfully created!</p>";
+                            } else {
+                                for(let i = 0; i < data.length; i++) {
+                                    document.getElementById("messages").innerHTML += "<p class='error'>" + data[i] + "</p>";
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+        </script>
+    </body>
+</html>
