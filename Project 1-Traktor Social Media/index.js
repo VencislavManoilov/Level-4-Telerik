@@ -6,10 +6,7 @@ const fs = require("fs");
 const validator = require("email-validator");
 const { type } = require("os");
 const fileUpload = require("express-fileupload");
-<<<<<<< HEAD
-=======
 const sharp = require('sharp');
->>>>>>> master
 
 app.use(express.static('public'));
 app.use(fileUpload());
@@ -63,6 +60,8 @@ function checkSession(sessionKey) {
 
 function updateSession(ide) {
     const newKey = getSessionKey();
+
+    console.log(allSessions);
 
     allSessions.push({key : newKey, id : ide});
     uploadSession(allSessions);
@@ -230,10 +229,7 @@ app.post("/post/:sessionKey", function(req, res) {
         }
 
         const imageData = req.files.image;
-<<<<<<< HEAD
-=======
         const type = imageData.mimetype.slice(6, imageData.mimetype.length);
->>>>>>> master
         
         const fileSizeBytes = imageData.length;
         const fileSizeMB = fileSizeBytes / (1024 * 1024);
@@ -243,17 +239,6 @@ app.post("/post/:sessionKey", function(req, res) {
         }
 
         const imageName = getSessionKey();
-<<<<<<< HEAD
-        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), imageData.data);
-
-        let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
-        
-        userPosts.posts.push({ id : imageName });
-        fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), JSON.stringify(userPosts));
-
-
-        res.status(200).send({message : "Successfully posted!"});
-=======
         if(type == "jpeg") {
             fs.writeFileSync(path.join(__dirname, "Database", "Posts", userId, imageName + ".jpg"), imageData.data);
             let userPosts = JSON.parse(fs.readFileSync(path.join(__dirname, "Database", "Posts", userId, "posts.json"), {encoding: 'utf8'}));
@@ -279,7 +264,6 @@ app.post("/post/:sessionKey", function(req, res) {
                 res.status(200).send({ message: "Successfully posted!" });
             });
         }
->>>>>>> master
     }
 })
 
